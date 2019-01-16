@@ -7,6 +7,7 @@
     "babel-eslint": "^9.0.0",
     "bcrypt": "^2.0.1",
     "body-parser": "^1.18.2",
+    "casual": "^1.5.19",
     "cors": "^2.8.4",
     "dotenv": "^6.0.0",
     "eslint-plugin-react": "^7.11.1",
@@ -35,7 +36,8 @@
     "reset": "node index.js --force",
     "copy-env": "cp sample.env .env",
     "setup-db": "createdb bootcampproject",
-    "db": "psql -U admin postgres"
+    "db": "psql -U selakasepa",
+    "db-create-user": "createuser -P -s -e admin"
   },
   "devDependencies": {
     "eslint": "^4.19.1",

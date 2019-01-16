@@ -65,3 +65,12 @@ You should go about doing this in the following manner. If you need help with sy
     - Here, implement methods which get the table name corresponding to the Knex tables made in Step 1
     - Determine the proper relations between different models and make another method to add the relation
     - HINT: For the following relation, you'll need a different type of relation than the other two, and this relation might (it will!) require creating a new 'join table' through knex.
+
+### Stage 2
+Complete functions which take advantage of Objection.js functionality to query for various kinds of data.
+
+Implement the functions marked as TODO in /src/graphql/types/user, /src/graphql/types/post, and src/graphql/mutations/Post as per the specifications given therein.
+
+Refer to the Knex documentation and lecture code for syntactical clarifications: https://knexjs.org/
+
+It will be hard to test your functionality without knowledge of GraphQL (look forward to tomorrow!), but if you're curious, just ask one of the TFs!

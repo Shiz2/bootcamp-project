@@ -50,7 +50,6 @@ module.exports = gql`
   }
 
   input UserUpdate {
-    id: ID!
     name: String
     email: String
     password: String
@@ -68,7 +67,7 @@ module.exports = gql`
 
   input PostUpdate {
     id: ID!
-    post: String!
+    content: String!
   }
 
   input PostInput {
@@ -133,7 +132,7 @@ module.exports = gql`
     updateUser(input: UserUpdate!): UserUpdateReturn
     updateHobby(input: HobbyUpdate!): HobbyUpdateReturn
     updatePost(input: PostUpdate!): PostUpdateReturn
-    deleteUser(input: DeleteInput): DefaultMutationResponse
+    deleteUser: DefaultMutationResponse
     deleteHobby(input: DeleteInput): DefaultMutationResponse
     deletePost(input: DeleteInput): DefaultMutationResponse
   }

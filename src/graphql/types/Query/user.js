@@ -27,28 +27,31 @@ const usersResolver = async (obj, args, context) => {
     - concentration: include only users who have that concentration
     - hobbies: include only users who have indicated one of the hobbies in that list
   */
+
   try {
     const queryBuilder = User.query();
     if (substr) {
       const substr_search = '%' + substr + '%';
-      queryBuilder.whereRaw('na?', substr_search);
+      queryBuilder.whereRaw('name ilike ?', substr_search);
     }
 
     if (hometown) {
-      queryBuilder.where('hometown', hometown)
+      queryBuilder.where('hometown', 'ilike', hometown)
     }
 
     if (house) {
-      queryBuilder.where('house', house);
+      queryBuilder.where('house', 'ilike', house);
     }
 
     if (concentration) {
-      queryBuilder.where('concentration', concentration);
+      queryBuilder.where('concentration', 'ilike', concentration);
     }
 
     if (hobbies) {
-      queryBuilder.leftJoin('hobby','user.id', 'hobby.user_id').whereIn('hobby.hobby', hobbies);
+      queryBuilder.whereIn('id', Hobby.query().select('user_id').whereIn('hobby', hobbies))
+      // queryBuilder.leftJoin('hobby','user.id', 'hobby.user_id').whereIn('hobby.hobby', hobbies);
     }
+    console.log(queryBuilder.toString())
     return await queryBuilder;
   } catch (error) {
     console.error(error);

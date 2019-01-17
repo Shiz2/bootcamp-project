@@ -46,9 +46,6 @@ const createUser = async (obj, { input }) => {
   const payload = { id: user.id };
   const token = jwt.sign(payload, config.tokenSecret);
 
-  console.log(user);
-  console.log(token);
-
   return {
     user,
     token,
@@ -56,16 +53,11 @@ const createUser = async (obj, { input }) => {
 };
 
 const updateUser = async (_, { input }, context) => {
-  if (!context.user) {
-    return {
-      error: {
-        message: 'User not logged in',
-      },
-    };
-  }
   try {
+    if (!context.user) {
+      throw new Error('User is not logged in')
+    };
     const {
-      id,
       name,
       email,
       password,
@@ -76,48 +68,58 @@ const updateUser = async (_, { input }, context) => {
       concentration,
     } = input;
 
-    const queryBuilder = User.query().where('id', id);
+    const { id } = context.user
+    const update={}
     if (name) {
-      queryBuilder.update('name', name);
+      update.name = name
     }
 
     if (email) {
-      queryBuilder.update('email', email);
+      // check if email already exists
+      const rows = await User.query()
+        .select('email')
+        .where('id', id)
+        .limit(1)
+      if (!rows) {
+        throw new Error('email provided is not unique')
+      }
+      update.email = email
     }
 
     if (concentration) {
-      queryBuilder.update('concentration', concentration);
+      update.concentration = concentration
     }
 
     if (gender) {
-      queryBuilder.update('gender', gender);
+      update.gender = gender
     }
 
     if (hometown) {
-      queryBuilder.update('hometown', hometown);
+      update.hometown = hometown
     }
 
     if (house) {
-      queryBuilder.update('house', house);
+      update.house = house
     }
 
     if (concentration) {
-      queryBuilder.update('concentration', concentration);
+      update.concentration = concentration;
     }
 
     if (password) {
-      const [user] = await User.query()
+      const [ hash_obj ] = await User.query()
         .select('password_hash')
-        .where('id', id);
-      const valid = await bcrypt.compare(oldPassword, user.password_hash);
+        .where('id', id)
+        .limit(1);
+      const valid = await bcrypt.compare(oldPassword, hash_obj.password_hash);
       if (!valid) {
         throw new Error('Invalid password.')
       }
-
-      queryBuilder.update('password_hash', bcrypt(password, config.saltRounds));
+      const password_hash = await bcrypt.hash(password, config.saltRounds)
+      update.password_hash = password_hash
     }
 
-    await queryBuilder;
+    await User.query().where('id', id).update(update)
 
     return {
       code: 200,
@@ -127,14 +129,37 @@ const updateUser = async (_, { input }, context) => {
     };
   } catch (error) {
     return {
-      code: 200,
-      success: true,
+      code: 400,
+      success: false,
       message: error.message,
       user: input,
     };
   }
 };
 
-const resolver = { Mutation: { createUser, updateUser } };
+const deleteUser = async (_, args ,context) => {
+  try{
+    if (!context.user) {
+      throw new Error('User is not logged in')
+    };
+    const { id } = context.user
+    await User.query()
+      .where('id', id)
+      .del()
+    return {
+      message: 'User has been successfully deleted',
+      code: 200,
+      success: true
+    }
+  } catch (error) {
+    return {
+      message: error.message,
+      code: 400,
+      success: false
+    }
+  }
+}
+
+const resolver = { Mutation: { createUser, updateUser, deleteUser } };
 
 module.exports = resolver;

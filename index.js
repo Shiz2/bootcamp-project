@@ -1,7 +1,6 @@
 const express = require('express')
 const { createServer } = require('http')
-
-const { graphqlExpress, graphiqlExpress } = require('apollo-server-express')
+const { ApolloServer, gql } = require('apollo-server-express');
 const { Model } = require('objection')
 const Knex = require('knex')
 
@@ -9,7 +8,7 @@ const bodyParser = require('body-parser')
 const jwt = require('jsonwebtoken')
 
 const knexfile = require('./knexfile')
-const User = require('./src/models/User')
+const {User} = require('./src/models/User')
 const schema = require('./src/graphql')
 const { tokenSecret, port } = require('./config')
 
@@ -51,38 +50,27 @@ app.use((req, res, next) => {
 
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: false }))
-app.use(
-  '/graphql',
-  bodyParser.json(),
-  graphqlExpress(async req => {
-    const token = req.headers.authorization
-    if (token) {
-      const decoded = jwt.verify(token, tokenSecret)
-      const user = await User.query().findById(decoded.id)
-      return {
-        schema,
-        context: {
-          user,
-        },
+const server = new ApolloServer({
+    schema,
+    context: async ({ req }) => {
+      if (!req) {
+        return { }
       }
+      const token = req.headers ? req.headers.authorization: undefined
+      if (token) {
+        const decoded = jwt.verify(token, tokenSecret)
+        const user = await User.query().findById(decoded.id)
+        return  { user }
+      }
+      return { }
     }
-    return {
-      schema,
-    }
-  }),
+  }
 )
 
-app.use(
-  '/graphiql',
-  graphiqlExpress({
-    endpointURL: '/graphql',
-  }),
-)
+server.applyMiddleware({ app })
 
-const server = createServer(app)
-
-app.listen(port, () => {
-  console.log(`Apollo Server is now running on http://localhost:${port}`)
-})
-
-module.exports = app
+// Start the server
+app.listen({ port: 5000 }, () =>
+  console.log(`🚀 Server ready at http://localhost:5000${server.graphqlPath}`)
+);
+module.exports = app;

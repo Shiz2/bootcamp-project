@@ -7,7 +7,7 @@ class BaseModel extends Model {
   }
 
   $beforeUpdate() {
-    this.updatedAt = new Date()
+    this.updated_at = new Date()
   }
 }
 
